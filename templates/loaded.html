@@ -483,7 +483,7 @@
                 var cj = row.querySelector('td:nth-child(1)').innerText.toLowerCase();
                 var nombreEquipo = row.querySelector('td:nth-child(2)').innerText.toLowerCase();
 
-                if (cj.endsWith('1') && (cj.includes(searchTerm) || nombreEquipo.includes(searchTerm))) {
+                if (cj.includes(searchTerm) || nombreEquipo.includes(searchTerm)) {
                     row.style.display = '';
                 } else {
                     row.style.display = 'none';

@@ -50,7 +50,7 @@ def cargarArchivo():
     if request.method == 'POST':
         grouped_data = {}
         errores_data = {} 
-        project_name = request.form.get('projectName', 'Nombre de Proyecto no especificado').upper()[:15]
+        project_name = request.form.get('projectName', 'Nombre de Proyecto no especificado').upper()[:50]
         session['project_name'] = project_name
 
         participantes = {}
