@@ -33,7 +33,7 @@
                     <div class="col-md-3">
                         <div class="row d-flex justify-content: flex-end" style="margin-top: -58px;">
                             <button type="button" id="copiasButton" class="btn">Copiar</button>
-                            <button type="button" id="exportarButton" class="btn">Exportar ZIP</button>
+                            <button type="button" id="exportarButton" class="btn">Exportar</button>
 
                         </div>
                     </div>
@@ -714,7 +714,7 @@
                         agregarObservacion(row, preguntaId, result.value);
                     }
                     capturarEventosTeclado = true;
-                    mostrarPregunta(titulo, onConfirm, onDeny, onBack, onComment, row, decision, preguntaId);
+                    mostrarPregunta(titulo, onConfirm, onDeny, onBack, onComment, row, decision, preguntaId,descripcionDetallada);
                 });
             });
 
