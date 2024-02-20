@@ -1250,36 +1250,34 @@
 
 
     document.getElementById("exportarButton").addEventListener("click", async function () {
+        doc = new jspdf.jsPDF({ orientation: 'p', unit: 'mm', format: 'letter' });
         const imagenFondo = 'static/img/plantillaPDF2.png';
         const pageWidth = doc.internal.pageSize.getWidth();
         const pageHeight = doc.internal.pageSize.getHeight();
         const titulo = "ANEXO DE: " + nombreProyecto;
     
-        // Ajustes para el título
-        doc.setFont('helvetica', 'bold').setFontSize(22).setTextColor(27, 48, 89); // Tamaño de fuente más grande para el título
+        doc.setFont('helvetica', 'bold').setFontSize(22).setTextColor(27, 48, 89); 
         const tituloWidth = doc.getTextWidth(titulo);
-        const tituloX = (pageWidth - tituloWidth) / 2; // Centro horizontal
-        let y = (pageHeight / 2) - 20; // Aproximación para centrar verticalmente, ajusta este valor según sea necesario
+        const tituloX = (pageWidth - tituloWidth) / 2; 
+        let y = (pageHeight / 2) - 20; 
     
-        // Dibujar el título centrado
         doc.text(titulo, tituloX, y);
     
-        // Ajustes para los participantes
-        y += 10; // Espacio después del título
+  
+        y += 10; 
         doc.setFont('helvetica', 'normal').setFontSize(14).setTextColor(0, 0, 0);
         
-        // Calcular la posición central para los participantes
         Object.values(participantes).forEach(p => {
             const textoParticipante = `${p.Cargo} ${p.Nombre} ${p.Institución}`;
             const textoWidth = doc.getTextWidth(textoParticipante);
-            const textoX = (pageWidth - textoWidth) / 2; // Centro horizontal
+            const textoX = (pageWidth - textoWidth) / 2; 
             doc.text(textoParticipante, textoX, y);
-            y += 10; // Ajusta el espacio entre cada participante
+            y += 10; 
         });
 
         
         doc.addImage(imagenFondo, 'PNG', 0, 0, doc.internal.pageSize.getWidth(), doc.internal.pageSize.getHeight());
-        doc.addPage(); //aca se termina la primera pagina
+        doc.addPage(); 
 
     
         const rows = document.querySelectorAll("#dataTable tbody tr");
@@ -1295,21 +1293,20 @@
             const MEC = row.querySelector("td:nth-child(3)").innerText;
             var ruta = groupedData[cj]['decisionPath'];
             let imagePath = 'static/img/' + ruta + '.png'; 
-            var xImage = 10; // Posición inicial de la imagen
-            var imageWidth = 120, imageHeight = 140; // Tamaño de la imagen
-            var xObservaciones = xImage + imageWidth + 5; // Posición inicial de las observaciones
-            var maxWidth = doc.internal.pageSize.getWidth() - xObservaciones - 10; // Ancho máximo para las observaciones
+            var xImage = 10; 
+            var imageWidth = 120, imageHeight = 140; 
+            var xObservaciones = xImage + imageWidth + 5; 
+            var maxWidth = doc.internal.pageSize.getWidth() - xObservaciones - 10; 
             var nombreMaxWidth = 180;
             
 
             y = 30
-            // CJ y Nombre del Equipo en negrita y tamaño 15
+            
             doc.addImage(imagenFondo, 'PNG', 0, 0, doc.internal.pageSize.getWidth(), doc.internal.pageSize.getHeight());
-            // Establece la fuente y el tamaño para el texto
+           
             doc.setFont('helvetica', 'bold').setFontSize(14);
             doc.setTextColor(27, 48, 89);
 
-            // Preparar el texto del CJ y el nombre del equipo para manejar el salto de línea si es necesario
             var textoCompleto = `CJ: ${cj} - ${nombreEquipo}`;
             var lineas = doc.splitTextToSize(textoCompleto, nombreMaxWidth); // Divide el texto para ajustarse al ancho máximo
 
@@ -1338,20 +1335,18 @@
             var observaciones = groupedData[cj].observaciones || [];
             if (observaciones.length > 0) {
                 doc.setFont('helvetica', 'bold');
-                // Establece el color del texto para el título "Descripciones"
-                doc.setTextColor(27, 48, 89); // Azul oscuro para el título
+                doc.setTextColor(27, 48, 89); 
                 doc.text('Descripciones:', xObservaciones, yObservaciones);
                 yObservaciones += 6; 
 
                 doc.setFont('helvetica', 'normal');
-                // Establece el color del texto para las observaciones a gris (80, 80, 80)
                 doc.setTextColor(80, 80, 80);
                 observaciones.forEach(function(observacion) {
                     var textoObservacion = `Pregunta ${observacion.preguntaId}: ${observacion.texto}`;
-                    var lines = doc.splitTextToSize(textoObservacion, maxWidth); // Divide el texto para ajustarse al ancho máximo
+                    var lines = doc.splitTextToSize(textoObservacion, maxWidth); 
                     lines.forEach(function(line) {
                         doc.text(line, xObservaciones, yObservaciones);
-                        yObservaciones += 6; // Incrementa la posición Y para la siguiente línea
+                        yObservaciones += 6; 
                     });
                 });
                 // Restablece el color del texto a negro (o cualquier otro color deseado) después de imprimir las observaciones
