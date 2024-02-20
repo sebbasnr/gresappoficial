@@ -21,7 +21,7 @@
                         </button>
                     </div>
                     <div class="col-md-7">
-                        <h6 id="nombreDelProyecto" style="margin-top: 10px; margin-right:-8%; font-weight: bold">
+                        <h6 id="nombreDelProyecto" style="margin-top: 10px; margin-right:5%; font-weight: bold">
                         {{ session.get('project_name', 'Nombre de Proyecto no especificado') }}
                         </h6>
                     </div>
@@ -622,22 +622,6 @@
     }
 
 
-    document.getElementById('searchInput').addEventListener('input', function () {
-        var searchTerm = this.value.toLowerCase();
-        var rows = document.querySelectorAll('#dataTable tbody tr');
-
-        rows.forEach(function (row) {
-            var cj = row.querySelector('td:nth-child(1)').innerText.toLowerCase();
-            var nombreEquipo = row.querySelector('td:nth-child(2)').innerText.toLowerCase();
-
-            if (cj.endsWith('1') && (cj.includes(searchTerm) || nombreEquipo.includes(searchTerm))) {
-                row.style.display = '';
-            } else {
-                row.style.display = 'none';
-            }
-        });
-    });
-
 
     function eliminarUltimoDigito() { decisionPath = decisionPath.slice(0, -1); }
 
@@ -720,10 +704,9 @@
 
             function mostrarDatosOperacion() {
                 let tablaHtml = `<table class="table" style="font-size: 12px;"><thead><tr><th>Operación</th><th>Sub-operación</th><th>Velocidad (nudos)</th></tr></thead><tbody>`;
-                for (key in operationData) {
-                    console.log(key)
-                    tablaHtml += `<tr><td>${key}</td><td>${operationData[key]['Sub-operación']}</td><td>${operationData[key]['Velocidad']}</td></tr>`;
-                };
+                    for (key in operationData) {            
+                        tablaHtml += `<tr><td>${operationData[key]['Operación']}</td><td>${operationData[key]['Sub-operación']}</td><td>${operationData[key]['Velocidad']}</td></tr>`;
+                    };
                 tablaHtml += '</tbody></table>';
  
                 Swal.fire({
@@ -1254,29 +1237,42 @@
         const imagenFondo = 'static/img/plantillaPDF2.png';
         const pageWidth = doc.internal.pageSize.getWidth();
         const pageHeight = doc.internal.pageSize.getHeight();
+        const margin = 10; // Define un margen para los textos
+        const maxWidth = pageWidth - (margin * 2); // Ancho máximo para el texto, considerando los márgenes
         const titulo = "ANEXO DE: " + nombreProyecto;
     
-        doc.setFont('helvetica', 'bold').setFontSize(22).setTextColor(27, 48, 89); 
-        const tituloWidth = doc.getTextWidth(titulo);
-        const tituloX = (pageWidth - tituloWidth) / 2; 
-        let y = (pageHeight / 2) - 20; 
+        doc.setFont('helvetica', 'bold').setFontSize(22).setTextColor(27, 48, 89);
+        let y = (pageHeight / 2) - 20;
     
-        doc.text(titulo, tituloX, y);
+        // Divide el texto del título si es demasiado largo para una sola línea
+        const lineasTitulo = doc.splitTextToSize(titulo, maxWidth);
     
-  
-        y += 10; 
+        // Imprime cada línea del título ajustada al centro
+        lineasTitulo.forEach(function(linea) {
+            const tituloWidth = doc.getTextWidth(linea);
+            const tituloX = (pageWidth - tituloWidth) / 2;
+            doc.text(linea, tituloX, y);
+            y += 10; // Incrementa 'y' para la siguiente línea
+        });
+    
+        // Ajustes para la lista de participantes
+        y += 10; // Espacio adicional después del título
         doc.setFont('helvetica', 'normal').setFontSize(14).setTextColor(0, 0, 0);
-        
+    
         Object.values(participantes).forEach(p => {
             const textoParticipante = `${p.Cargo} ${p.Nombre} ${p.Institución}`;
-            const textoWidth = doc.getTextWidth(textoParticipante);
-            const textoX = (pageWidth - textoWidth) / 2; 
-            doc.text(textoParticipante, textoX, y);
-            y += 10; 
-        });
+            const lineasParticipante = doc.splitTextToSize(textoParticipante, maxWidth);
 
-        
-        doc.addImage(imagenFondo, 'PNG', 0, 0, doc.internal.pageSize.getWidth(), doc.internal.pageSize.getHeight());
+        lineasParticipante.forEach(function(linea) {
+            const textoWidth = doc.getTextWidth(linea);
+            const textoX = (pageWidth - textoWidth) / 2; 
+            doc.text(linea, textoX, y);
+            y += 10; // Incrementa 'y' para la siguiente línea del participante
+            });
+        });
+    
+        // Continúa con la lógica para añadir el fondo y las páginas de los equipos como en tu código original
+        doc.addImage(imagenFondo, 'PNG', 0, 0, pageWidth, pageHeight);
         doc.addPage(); 
 
     
@@ -1409,17 +1405,13 @@
             var dataToExport = [];
             var missingMEC = [];
             dataToExport.push(["CJ", "Nombre_Equipo", "MEC"]);
-
-            const rows = document.querySelectorAll("#dataTable tbody tr");
-
-            rows.forEach(row => {
-                const cj = row.querySelector("td:nth-child(1)").innerText;
-                const nombreEquipo = row.querySelector("td:nth-child(2)").innerText;
-                const mec = row.querySelector("td:nth-child(3)").innerText;
-
-                // Agregar a dataToExport
+ 
+            Object.keys(groupedData).forEach(cj => {
+                var nombreEquipo = groupedData[cj]['Nombre_Equipo'];
+                const mec = groupedData[cj]['MEC'];
+ 
                 dataToExport.push([cj, nombreEquipo, mec]);
-
+ 
                 // Verificar si el MEC está vacío
                 if (mec === "") {
                     missingMEC.push(cj);
@@ -1433,11 +1425,9 @@
 
             ws['!cols'] = [{ wpx: 100 }, { wpx: 250 }, { wpx: 100 }];
 
-            XLSX.utils.book_append_sheet(wb, ws, "Sistemas");
-
             if (missingMEC.length > 0) {
                 alert("Falta el MEC en los siguientes CJ: " + missingMEC.join(", "))
-            } else { XLSX.writeFile(wb, "ExportedData.xlsx"), doc.save(`${nombreProyecto}.pdf`) } 
+            } else { XLSX.writeFile(wb, (`${nombreProyecto}.xlsx`)), doc.save(`${nombreProyecto}.pdf`) } 
         });
     });
 
@@ -1460,15 +1450,27 @@
 
         const prefix = selectedCJ.substring(0, 4); 
 
-        let popupHtml = '<div style="display: flex; justify-content: center;"><table class="table" style="margin: auto;"><thead><tr><th>CJ</th><th style="padding-left: 20px;">Nombre Equipo</th><th style="padding-left: 20px;"><br><input type="checkbox" id="selectAll" /></th></tr></thead><tbody>';
-
+        let popupHtml = `<div style="display: flex; justify-content: center;">
+            <table class="table" style="margin: auto;">
+              <thead>
+                <tr>
+                  <th>CJ</th>
+                  <th style="padding-left: 20px;">Nombre Equipo</th>
+                  <th style="">
+                    <label for="selectAll" style="margin-left: 5px;">Seleccionar<br>todo</label>
+                    <input type="checkbox" id="selectAll" />
+                  </th>
+                </tr>
+              </thead>
+              <tbody>`;
+ 
             document.querySelectorAll('#dataTable tbody tr').forEach(row => {
                 const rowCJ = row.getAttribute('data-cj');
                 if (rowCJ.startsWith(prefix) && rowCJ !== selectedCJ) {
-                    popupHtml += `<tr><td>${row.children[0].textContent}</td><td style="padding-left: 20px;">${row.children[1].textContent}</td><td style="padding-left: 20px;"><input type="checkbox" name="copias" value="${rowCJ}"></td></tr>`;
+                    popupHtml += `<tr><td width=10%>${row.children[0].textContent}</td><td style="">${row.children[1].textContent}</td><td width=16%><input type="checkbox" name="copias" value="${rowCJ}"></td></tr>`;
                 }
             });
-            
+           
             popupHtml += '</tbody></table></div>';
             
             Swal.fire({

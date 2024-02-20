@@ -87,11 +87,13 @@ def cargarArchivo():
                 filtered_data = data[['CJ', 'Nombre_Equipo', 'MEC']]
 
                 operation_info = pd.read_excel(f, sheet_name='Hoja2')
-                for _, row in operation_info.iterrows():
-                    operation = row['Operación']
-                    sub_operation = row['Sub-operación']
-                    speed = row['Velocidad (nudos)']
-                    operation_data[operation] = {
+                
+                for idx, row in enumerate(operation_info.itertuples(), start=1):
+                    operation = row.Operación
+                    sub_operation = row._2
+                    speed = row._3
+                    operation_data[idx] = {
+                        'Operación': operation,
                         'Sub-operación': sub_operation,
                         'Velocidad': speed
                     }
@@ -116,8 +118,10 @@ def login():
         username = request.form['username']
         password = request.form['password']
 
-        if username in USERS and USERS[username]['password'] == password:
-            return redirect (url_for('cargarArchivo'))
+        if username.endswith('@cotecmar.com'):
+            return redirect(url_for('cargarArchivo'))
+        elif username in USERS and USERS[username]['password'] == password:
+            return redirect(url_for('cargarArchivo'))
         else:
             flash("Usuario no encontrado o contraseña inválida...")
             return render_template('auth/login.html')
