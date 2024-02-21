@@ -91,7 +91,6 @@
     const nombreProyecto = nombreProyectoElement.textContent.trim();
     var groupedData = JSON.parse('{{ grouped_data | tojson | safe }}');
     var participantes = JSON.parse('{{ participantes | tojson | safe }}');
-    console.log(participantes)
     var operationData = JSON.parse('{{ operation_data | tojson | safe }}');
     var erroresData = JSON.parse('{{ errores_data | tojson | safe }}');
     var newTeamForm = `
@@ -135,8 +134,8 @@
     var descriptButtonImgUrl = "{{ url_for('static', filename='img/question-circle.svg') }}";
     let decisionPath = '';
     var doc = new jspdf.jsPDF({ orientation: 'p', unit: 'mm', format: 'letter' });
-    const toggles = document.querySelectorAll('.toggle-button');
-    toggles.forEach(toggle => { toggle.addEventListener('click', toggleButtonBehavior); });
+    var toggles = document.querySelectorAll('.toggle-button');
+    
 
     Object.keys(groupedData).forEach(cj => {
         groupedData[cj].observaciones = groupedData[cj].observaciones || [];
@@ -211,150 +210,7 @@
         setTimeout(() => container.style.display = 'none', 500); // Espera a que la transición termine para ocultar
     });
 
-    /*document.getElementById('addTeamBtn').addEventListener('click', function() {
-
-        setTimeout(function () {
-        maintable.classList.remove('expanded');
-        searchInput.parentElement.classList.remove('centered');
-        }, 300);
-
-        setTimeout(function () {
-            infoform.classList.remove('hidden');
-        }, 700); 
-
-
-        var currentFormHTML = document.getElementById('infoform').innerHTML;
     
-        document.getElementById('infoform').innerHTML = newTeamForm;
-    
-        document.getElementById('infoform').addEventListener('click', function(event) {
-            if (event.target.type === 'submit') {
-                event.preventDefault();
-    
-                var nuevoCj = document.getElementById('nuevoCjInput').value;
-                var nuevoNombre = document.getElementById('nuevoNombreEquipoInput').value;
-                nuevoNombre = nuevoNombre.toUpperCase();
-    
-                if (!validarCJ(nuevoCj)) {
-                    alert('El CJ ingresado no es válido');
-                    return;
-                }
-                
-                const cjValidado = validarCJ(nuevoCj);
-
-    
-                if (groupedData.hasOwnProperty(cjValidado)) {
-                    alert('El CJ ' + cjValidado + ' ya existe para el equipo principal.');
-                    return;
-                }
-    
-                groupedData[cjValidado] = {
-                    'MEC': '',
-                    'Nombre_Equipo': nuevoNombre,
-                    'decisionPath': '',
-                    'observaciones': [],
-                };
-                
-                const copiasContenedor = document.getElementById('copiasContenedor');
-                const copiasInputs = copiasContenedor.querySelectorAll('.form-control');
-                const copiasData = {}; 
-
-                copiasInputs.forEach(function(input, index) {
-                    const cjCopia = input.value;
-
-                    if (copiasInputs[index + 1]) {
-                        let nombreEquipoCopia = copiasInputs[index + 1].value;
-                        nombreEquipoCopia = nombreEquipoCopia.toUpperCase();   
-
-                        copiasData[cjCopia] = {
-                            'MEC': '',
-                            'Nombre_Equipo': nombreEquipoCopia,
-                            'decisionPath': '',
-                            'observaciones': [],
-                        };
-                    }
-                });
-
-                
-                Object.assign(groupedData, copiasData);
-                actualizarTabla(cjValidado);
-                configurarEventosTabla();
-                
-                function cargarInformacionEnInfoform(cj) {
-                    var data = groupedData[cj];
-                    if (!data) {
-                        console.error("No se encontró el CJ en groupedData");
-                        return;
-                    }
-                
-                    var MEC = data.MEC || 'No asignado';
-                    var nombreEquipo = data.Nombre_Equipo;
-                    var ruta = data.decisionPath;
-                    var imagePath = 'static/img/' + ruta + '.png';
-                
-                    var formHTML = `
-                        <form id="editForm" class="row g-2">
-                            <div class="col-md-3">
-                                <div class="col-12 mt-2">
-                                    <label for="cjInput" class="form-label">CJ</label>
-                                    <input type="text" class="form-control float-starts" id="cjInput" value="${cj}" readonly>
-                                </div>
-                                <div class="col-12 mt-2">
-                                    <label for="mecInput" class="form-label">MEC</label>
-                                    <input type="text" class="form-control float-starts" id="mecInput" value="${MEC}" readonly>
-                                </div>
-                                <div class="col-6 mt-3">
-                                    <button type="button" id="asignarMECButton" class="btn">Asignar MEC</button>
-                                </div>
-                            </div>
-                            <div class="col-md-9" style="margin-top:16px">
-                                <div class="col-12">
-                                    <label for="nombreEquipoInput" class="form-label">Nombre Equipo</label>
-                                    <input type="text" class="form-control" id="nombreEquipoInput" value="${nombreEquipo}">
-                                </div>
-                                <div class="col-12">
-                                    <img id="imagenDecision" src="${imagePath}" alt="" style="max-width: 100%; height: auto;">
-                                </div>
-                            </div>
-                        </form>
-                        <div class="mt-4" id="observacionesContainer">
-                            <!-- La tabla de observaciones se generará aquí -->
-                        </div>
-                        <div class="mt-4" id="childTeamsContainer">
-                            <!-- La tabla de equipos hijos se generará aquí -->
-                        </div>
-                    `;
-                
-                    document.getElementById('infoform').innerHTML = formHTML;
-                    var cjPrefix = cj.substring(0, 4);
-                    actualizarListaHijos(cjPrefix);
-                    actualizarListaObservaciones(cj);
-                
-                    document.getElementById('editForm').addEventListener('submit', function(event) {
-                        event.preventDefault();
-                    });
-                }
-
-                cargarInformacionEnInfoform(cjValidado)
-        
-
-            } else if (event.target.id === 'cancelarNuevoEquipo') {
-                if (document.querySelector('.selected-row') === null){
-                    setTimeout(function () {
-                        maintable.classList.add('expanded');
-                        searchInput.parentElement.classList.add('centered');
-                    }, 300);
-                
-                    setTimeout(function () {
-                        infoform.classList.add('hidden');
-                    }, 700); 
-                } else {
-                    configurarEventosTabla();
-                    document.getElementById('infoform').innerHTML = currentFormHTML;
-                }
-            }
-        });
-    });*/
 
     function validarCJ(cj) {
         cj = cj.toString();
@@ -385,12 +241,14 @@
 
     function configurarEventosTabla(cjSeleccionado) {
         document.querySelectorAll('.edit-btn').forEach(function(row) {
+            toggles = document.querySelectorAll('.toggle-button');
+            toggles.forEach(toggle => { toggle.addEventListener('click', toggleButtonBehavior); });
+            toggles.forEach(toggle => { toggle.addEventListener('click', toggleView); });
 
             row.addEventListener('click', function() {
                 
                 if (document.querySelector('.selected-row') === null){
 
-                    toggleButtonBehavior();
                     var tableContainer = document.querySelector('.table-container');
 
                     setTimeout(function () {
@@ -509,7 +367,7 @@
                     <td>${key}</td>
                     <td>${value['Nombre_Equipo']}</td>
                     <td>${value['MEC']}</td>
-                    <td><img src="{{ url_for('static', filename='img/chevron-left.svg') }}" alt="chevron" class="toggle-button"></td>
+                    <td><img src="{{ url_for('static', filename='img/chevron-right.svg') }}" alt="chevron" class="toggle-button"></td>
                 `;
                 table.appendChild(row);
             }
@@ -693,6 +551,7 @@
                         "aria-label": "Escribe tu observación aquí"
                     },
                     showCancelButton: true,
+                    confirmButtonColor: '#F2AE2E',
                 }).then((result) => {
                     if (result.value) {
                         agregarObservacion(row, preguntaId, result.value);
@@ -714,6 +573,7 @@
                     html: tablaHtml,
                     customClass: 'custom-swal',
                     confirmButtonText: 'Volver',
+                    confirmButtonColor: '#F2AE2E',
                     width: '800px',
                     padding: '3em',
                     showCloseButton: true,
@@ -734,6 +594,7 @@
                         html: `<p>${descripcionDetallada}</p>`,
                         icon: 'info',
                         confirmButtonText: 'OK',
+                        confirmButtonColor: '#F2AE2E',
                         customClass: {
                             popup: 'custom-swal-modal', // Asegúrate de que esta clase esté definida en tu CSS.
                         },
@@ -826,35 +687,49 @@
     function pregunta2(row) {
         mostrarPregunta(
             '¿REPRESENTA UN EFECTO ADVERSO SOBRE EL PERSONAL, EL SISTEMA O EL MEDIO AMBIENTE?',
-            () => pregunta6(row), // Asegúrate de que esta llamada también maneje preguntaId adecuadamente
-            () => recursivo(row),
-            () => pregunta1('MEC 1', row), // Aquí también, maneja preguntaId si es necesario
+            () => pregunta6(row),
+            () => recursivo(row, 2), // Pasamos 2 como preguntaOrigen
+            () => pregunta1('MEC 1', row),
             null,
             row,
             decisionPath,
             "2",
             "<div style='text-align: justify;'>Evalúe si al quedar inoperativo el equipo, es decir, no cumplir su función, se refleja una consecuencia negativa sobre el personal, el sistema o el medio ambiente. </div>"
         );
-    }   
+    }
     function pregunta6(row) {
         mostrarPregunta(
             '¿EXISTE REDUNDANCIA DENTRO DEL SISTEMA PARA MITIGAR EL EFECTO ADVERSO PROVOCADO?',
-            () => recursivo(row),
+            () => recursivo(row, 6), // Pasamos 6 como preguntaOrigen
             () => { asignarMEC('MEC 4', row); cargarImagen(decisionPath); },
             () => pregunta2(row),
             null,
             row,
             decisionPath,
-            "3",
+            "6",
             "<div style='text-align: justify;'>Considere que la respuesta es afirmativa si dentro del sistema existe un subsistema en paralelo que cumpla con la misma función y pueda suplir la funcionalidad del equipo inoperativo. </div>"
         );
     }
-    function recursivo(row) {
+
+    function recursivo(row, preguntaOrigen) {
         mostrarPregunta(
             '¿LA CADENA DE SUCESOS CAUSA ALGUNA DEGRADACIÓN SOBRE ALGUNA DE LAS MISIONES?',
             () => pregunta4(row),
             () => { asignarMEC('MEC 1', row); cargarImagen(decisionPath); },
-            () => pregunta2(row),
+            // Utilizamos preguntaOrigen para decidir a qué pregunta regresar
+            () => {
+                switch (preguntaOrigen) {
+                    case 2:
+                        pregunta2(row);
+                        break;
+                    case 6:
+                        pregunta6(row);
+                        break;
+                    // Añade más casos según sea necesario
+                    default:
+                        console.log("Origen no reconocido");
+                }
+            },
             null,
             row,
             decisionPath,
@@ -862,6 +737,7 @@
             "<div style='text-align: justify;'>Considere una serie de eventos que están conectados entre sí causados por la incapacidad del equipo de operar.<br><br> Evalúe si el buque es capaz de llevar a cabo todas las misiones de manera exitosa (no afecta)  <br><br> En caso de no hacerlo, significa que sí afecta alguna o más misiones. </div>"
         );
     }
+
     function pregunta4(row) {
         mostrarPregunta(
             '¿EXISTEN REDUNDANCIAS DENTRO DEL SUBSISTEMA?',
@@ -1152,6 +1028,25 @@
         }
     });
 
+    function toggleView() {
+        var maintable = document.getElementById('maintable');
+        var infoform = document.getElementById('infoform');
+        var tableContainer = document.querySelector('.table-container');
+        var addTeamBtn = document.getElementById('addTeamBtn');
+        var exportarButton = document.getElementById('exportarButton');
+        var button = document.querySelector('.toggle-button');
+        var tools = document.getElementById('tools');
+
+        setTimeout(function () {
+            maintable.classList.toggle('expanded');
+            tableContainer.classList.toggle('expanded');
+            tableContainer.classList.toggle('collapsed');
+        }, 300); 
+
+        setTimeout(function () {
+            infoform.classList.toggle('hidden');
+        }, 700); 
+    }
 
     document.addEventListener('DOMContentLoaded', function() {
 
@@ -1160,26 +1055,6 @@
         document.querySelectorAll('.toggle-button').forEach(function(button) { button.addEventListener('click', toggleView); });
 
         if (!selectedRowExists) { toggleView(); }
-
-        function toggleView() {
-            var maintable = document.getElementById('maintable');
-            var infoform = document.getElementById('infoform');
-            var tableContainer = document.querySelector('.table-container');
-            var addTeamBtn = document.getElementById('addTeamBtn');
-            var exportarButton = document.getElementById('exportarButton');
-            var button = document.querySelector('.toggle-button');
-            var tools = document.getElementById('tools');
-
-            setTimeout(function () {
-                maintable.classList.toggle('expanded');
-                tableContainer.classList.toggle('expanded');
-                tableContainer.classList.toggle('collapsed');
-            }, 300); 
-
-            setTimeout(function () {
-                infoform.classList.toggle('hidden');
-            }, 700); 
-        }
     });
 
 
@@ -1405,13 +1280,13 @@
             var dataToExport = [];
             var missingMEC = [];
             dataToExport.push(["CJ", "Nombre_Equipo", "MEC"]);
- 
+    
             Object.keys(groupedData).forEach(cj => {
                 var nombreEquipo = groupedData[cj]['Nombre_Equipo'];
                 const mec = groupedData[cj]['MEC'];
- 
+    
                 dataToExport.push([cj, nombreEquipo, mec]);
- 
+    
                 // Verificar si el MEC está vacío
                 if (mec === "") {
                     missingMEC.push(cj);
@@ -1426,13 +1301,22 @@
             ws['!cols'] = [{ wpx: 100 }, { wpx: 250 }, { wpx: 100 }];
 
             if (missingMEC.length > 0) {
-                alert("Falta el MEC en los siguientes CJ: " + missingMEC.join(", "))
-            } else { XLSX.writeFile(wb, (`${nombreProyecto}.xlsx`)), doc.save(`${nombreProyecto}.pdf`) } 
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Falta MEC',
+                    text: 'Falta el MEC en los siguientes CJ:' + missingMEC.join(", "),
+                    confirmButtonText: 'Entendido',
+                    confirmButtonColor: '#F2AE2E',
+                });
+            } else { 
+                XLSX.writeFile(wb, (`${nombreProyecto}.xlsx`));
+                doc.save(`${nombreProyecto}.pdf`);
+            } 
         });
     });
 
     document.getElementById('copiasButton').addEventListener('click', function() {
-        // Verifica si hay una fila seleccionada
+
         const selectedRow = document.querySelector('.selected-row');
 
         if (!selectedRow) {
@@ -1440,7 +1324,8 @@
                 icon: 'warning',
                 title: 'Equipo no seleccionado',
                 text: 'Por favor, seleccione un equipo primero.',
-                confirmButtonText: 'OK'
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#F2AE2E',
             });
             return;
         }
@@ -1466,8 +1351,19 @@
  
             document.querySelectorAll('#dataTable tbody tr').forEach(row => {
                 const rowCJ = row.getAttribute('data-cj');
-                if (rowCJ.startsWith(prefix) && rowCJ !== selectedCJ) {
-                    popupHtml += `<tr><td width=10%>${row.children[0].textContent}</td><td style="">${row.children[1].textContent}</td><td width=16%><input type="checkbox" name="copias" value="${rowCJ}"></td></tr>`;
+
+                // Revisa si el CJ actual está asignado como 'copia' en cualquier otro registro
+                let esCopiaDeOtro = false;
+                for (let cj in groupedData) {
+                    if (groupedData[cj].copia === rowCJ) {
+                        esCopiaDeOtro = true;
+                        break; // Sale del ciclo si encuentra que es copia
+                    }
+                }
+
+                // Si el CJ actual no es copia de otro y no es el CJ seleccionado, lo añade al HTML
+                if (!esCopiaDeOtro && rowCJ.startsWith(prefix) && rowCJ !== selectedCJ) {
+                    popupHtml += `<tr><td width=10%>${row.children[0].textContent}</td><td>${row.children[1].textContent}</td><td width=16%><input type="checkbox" name="copias" value="${rowCJ}"></td></tr>`;
                 }
             });
            
@@ -1479,6 +1375,7 @@
                 width: '800px',
                 showCancelButton: true,
                 confirmButtonText: 'Guardar',
+                confirmButtonColor: '#F2AE2E',
                 cancelButtonText: 'Cancelar',
                 reverseButtons: true,
                 didOpen: () => {
@@ -1503,12 +1400,14 @@
                         icon: 'success',
                         title: 'Copias actualizadas',
                         text: 'Las copias seleccionadas han sido actualizadas correctamente.',
-                        confirmButtonText: 'OK'
+                        confirmButtonText: 'OK',
+                        confirmButtonColor: '#F2AE2E',
                     });
             
                     actualizarListaHijos(selectedCJ);
-                    actualizarTabla();
+                    actualizarTabla(selectedCJ);
                     configurarEventosTabla();
+
                 }
             });
     });
