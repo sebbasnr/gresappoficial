@@ -137,4 +137,5 @@ def loaded():
         all_data = []
     return render_template('loaded.html', all_data= all_data, project_name=project_name)
 
-
+if __name__ == '__main__':
+    app.run(debug=True)
